@@ -244,9 +244,11 @@ if [ "${1:-}" = notifications ]; then
     schedule) exec systemd-run --user --quiet --collect --unit="$u-$id-$(date +%s%N)" \
       --on-calendar="$(date -u -d "$t" '+%F %T UTC')" --timer-property=AccuracySec=1s --timer-property=RemainAfterElapse=no \
       -- "$self" notifications show "$@" ;;
-    show) here=${self%/*}
+    show) here=${self%/*} host=$(uname -n)
       # The adhan plays until it ends or the notification is closed; other toasts get the desktop's sound.
-      if [ -n "${sound:-}" ]; then
+      if [ "${host#c3}" != "$host" ]; then
+        hint=boolean:suppress-sound:true
+      elif [ -n "${sound:-}" ]; then
         "$(command -v pw-play || echo paplay)" "$here/Adhans/${sound##*/}" & player=$! hint=boolean:suppress-sound:true
       else hint=string:sound-name:message-new-instant; fi
       a=$(notify-send -w -a "Salaat First" -i salaat-first -h string:desktop-entry:salaat-first -h "$hint" \
